@@ -28,8 +28,7 @@ data C = While B C
     | Loop E C    --- Loop E C: Executa E vezes o comando C
     | Swap E E --- recebe duas variáveis e troca o conteúdo delas
     | DAtrrib E E E E -- Dupla atribuição: recebe duas variáveis "e1" e "e2" e duas expressões "e3" e "e4". Faz e1:=e3 e e2:=e4.
-   deriving(Eq,Show)                
-
+   deriving(Eq,Show)
 
 -----------------------------------------------------
 -----
@@ -37,17 +36,14 @@ data C = While B C
 -----
 ------------------------------------------------
 
-
 --- A próxima linha de código diz que o tipo memória é equivalente a uma lista de tuplas, onde o
 --- primeiro elemento da tupla é uma String (nome da variável) e o segundo um Inteiro
 --- (conteúdo da variável):
-
 
 type Memoria = [(String,Int)]
 
 exSigma :: Memoria
 exSigma = [ ("x", 10), ("temp",0), ("y",0)]
-
 
 --- A função procuraVar recebe uma memória, o nome de uma variável e retorna o conteúdo
 --- dessa variável na memória. Exemplo:
@@ -55,13 +51,11 @@ exSigma = [ ("x", 10), ("temp",0), ("y",0)]
 --- *Main> procuraVar exSigma "x"
 --- 10
 
-
 procuraVar :: Memoria -> String -> Int
 procuraVar [] s = error ("Variavel " ++ s ++ " nao definida no estado")
 procuraVar ((s,i):xs) v
   | s == v     = i
   | otherwise  = procuraVar xs v
-
 
 --- A função mudaVar, recebe uma memória, o nome de uma variável e um novo conteúdo para essa
 --- variável e devolve uma nova memória modificada com a varíável contendo o novo conteúdo. A
@@ -76,18 +70,14 @@ procuraVar ((s,i):xs) v
 mudaVar :: Memoria -> String -> Int -> Memoria
 mudaVar [] v n = error ("Variavel " ++ v ++ " nao definida no estado")
 mudaVar ((s,i):xs) v n
-  | s == v     = ((s,n):xs)
+  | s == v     = (s,n):xs
   | otherwise  = (s,i): mudaVar xs v n
-
 
 -------------------------------------
 ---
 --- Completar os casos comentados das seguintes funções:
 ---
 ---------------------------------
-
-
-
 
 ebigStep :: (E,Memoria) -> Int
 ebigStep (Var x,s) = procuraVar s x
@@ -97,13 +87,12 @@ ebigStep (Sub e1 e2,s)  = ebigStep (e1,s) - ebigStep (e2,s)
 ebigStep (Mult e1 e2,s)  = ebigStep (e1,s) * ebigStep (e2,s)
 ebigStep(Div e1 e2,s) = ebigStep (e1,s) `div` ebigStep (e2,s)
 
-
 bbigStep :: (B,Memoria) -> Bool
 bbigStep (TRUE,s)  = True
 bbigStep (FALSE,s) = False
-bbigStep (Not b,s) 
-   | bbigStep (b,s) == True     = False
-   | otherwise                  = True 
+bbigStep (Not b,s)
+   | bbigStep (b,s)     = False
+   | otherwise                  = True
 bbigStep (And b1 b2,s )  = bbigStep (b1,s) && bbigStep (b2,s)
 bbigStep (Or b1 b2,s )  = bbigStep (b1,s) || bbigStep (b2,s)
 bbigStep (Leq e1 e2,s) = ebigStep (e1,s) <= ebigStep (e2,s)
@@ -138,7 +127,6 @@ cbigStep (DAtrrib (Var x) (Var y) e1 e2,s) = (Skip,mudaVar (mudaVar s x (ebigSte
 exSigma2 :: Memoria
 exSigma2 = [("x",3), ("y",0), ("z",0)]
 
-
 ---
 --- O progExp1 é um programa que usa apenas a semântica das expressões aritméticas. Esse
 --- programa já é possível rodar com a implementação inicial  fornecida:
@@ -147,39 +135,43 @@ progExp1 :: E
 progExp1 = Soma (Num 3) (Soma (Var "x") (Var "y"))
 
 ---
---- para rodar:
--- *Main> ebigStep (progExp1, exSigma)
--- 13
--- *Main> ebigStep (progExp1, exSigma2)
--- 6
-
---- Para rodar os próximos programas é necessário primeiro implementar as regras da semântica
----
-
-
 ---
 --- Exemplos de expressões booleanas:
-
-
+-- bbigStep (teste1, exSigma2)
 teste1 :: B
-teste1 = (Leq (Soma (Num 3) (Num 3))  (Mult (Num 2) (Num 3)))
-
+teste1 = Leq (Soma (Num 3) (Num 3))  (Mult (Num 2) (Num 3))
+-- bbigStep (teste2, exSigma2)
 teste2 :: B
-teste2 = (Leq (Soma (Var "x") (Num 3))  (Mult (Num 2) (Num 3)))
-
+teste2 = Leq (Soma (Var "x") (Num 3))  (Mult (Num 2) (Num 3))
 
 ---
 -- Exemplos de Programas Imperativos:
-
-testec1 :: C
-testec1 = (Seq (Seq (Atrib (Var "z") (Var "x")) (Atrib (Var "x") (Var "y"))) 
-               (Atrib (Var "y") (Var "z")))
-
-fatorial :: C
-fatorial = (Seq (Atrib (Var "y") (Num 1))
+--
+-- cbigStep (teste3, exSigma2) Atrib
+teste3 :: C
+teste3 = Seq (Seq (Atrib (Var "z") (Var "x")) (Atrib (Var "x") (Var "y")))
+               (Atrib (Var "y") (Var "z"))
+-- cbigStep (teste4, exSigma2) While
+teste4 :: C
+teste4 = Seq (Atrib (Var "y") (Num 1))
                 (While (Not (Igual (Var "x") (Num 1)))
                        (Seq (Atrib (Var "y") (Mult (Var "y") (Var "x")))
-                            (Atrib (Var "x") (Sub (Var "x") (Num 1))))))
-
-
--- Escreva um programa que utilize todas as construções da linguagem
+                            (Atrib (Var "x") (Sub (Var "x") (Num 1)))))
+-- cbigStep (teste5, exSigma2) Do While
+teste5 :: C
+teste5 = DoWhile (Atrib (Var "x") (Sub (Var "x") (Num 1))) (Leq (Var "x") (Num 0))
+-- cbigStep (teste6, exSigma2) Loop
+teste6 :: C
+teste6 = Loop (Num 3) (Atrib (Var "y") (Soma (Var "y") (Num 1)))
+-- cbigStep (teste7, exSigma2) Swap
+teste7 :: C
+teste7 = Swap (Var "x") (Var "y")
+-- cbigStep (teste8, exSigma2) DAtrrib
+teste8 :: C
+teste8 = DAtrrib (Var "x") (Var "y") (Num 2) (Num 4)
+-- cbigStep (teste9, exSigma2) Loop, Do While e DAtrrib
+teste9 :: C
+teste9 = Seq 
+    (Loop (Num 5) (Atrib (Var "x") (Soma (Var "x") (Num 1))))  
+    (Seq(DoWhile (Atrib (Var "y") (Soma (Var "y") (Num 2))) (Leq (Var "y") (Num 10)))  
+        (DAtrrib (Var "a") (Var "b") (Soma (Var "a") (Num 1)) (Sub (Var "b") (Num 1))))
