@@ -127,6 +127,9 @@ cbigStep (DAtrrib (Var x) (Var y) e1 e2,s) = (Skip,mudaVar (mudaVar s x (ebigSte
 exSigma2 :: Memoria
 exSigma2 = [("x",3), ("y",2), ("z",8)]
 
+exSigma3 :: [(String, Int)]
+exSigma3 = [("a", 0), ("b", 0), ("temp", 0), ("x", 0), ("y", 0), ("z", 0)]
+
 ---
 --- O progExp1 é um programa que usa apenas a semântica das expressões aritméticas. Esse
 --- programa já é possível rodar com a implementação inicial  fornecida:
@@ -177,7 +180,7 @@ teste9 = Seq
         (DoWhile (Atrib (Var "y") (Soma (Var "y") (Num 2))) (Leq (Var "y") (Num 10)))  -- Do While y:=y+2 while y<=10
         (DAtrrib (Var "y") (Var "z") (Soma (Var "y") (Num 1)) (Sub (Var "z") (Num 1)))  -- y:=y+1 e z:=z-1
     )
--- cbigStep (fibonacci, exSigma2)
+-- cbigStep (fibonacci, exSigma2) Fibonacci
 fibonacci :: C
 fibonacci = Seq
     (Atrib (Var "x") (Num 0)) -- x:=0
@@ -193,4 +196,22 @@ fibonacci = Seq
             )
         )
     )
+    )
+-- cbigStep(gcdFunction, exSigma3) GCD
+gcdFunction :: C
+gcdFunction = Seq 
+    (Atrib (Var "a") (Num 56))  -- Inicialização de a
+    (Seq 
+        (Atrib (Var "b") (Num 98))  -- Inicialização de b
+        (While (Not (Igual (Var "b") (Num 0)))  -- Enquanto b != 0
+            (Seq
+                (Atrib (Var "temp") (Var "b"))  -- temp := b
+                (Seq
+                    -- b := a % b
+                    (Atrib (Var "b") (Sub (Var "a") (Mult (Div (Var "a") (Var "b")) (Var "b"))))  -- b := a - (a // b) * b
+                    -- a := temp
+                    (Atrib (Var "a") (Var "temp"))
+                )
+            )
+        )
     )
