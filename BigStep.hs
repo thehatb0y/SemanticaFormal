@@ -125,7 +125,7 @@ cbigStep (DAtrrib (Var x) (Var y) e1 e2,s) = (Skip,mudaVar (mudaVar s x (ebigSte
 -------------------------------------
 
 exSigma2 :: Memoria
-exSigma2 = [("x",3), ("y",0), ("z",0)]
+exSigma2 = [("x",3), ("y",2), ("z",8)]
 
 ---
 --- O progExp1 é um programa que usa apenas a semântica das expressões aritméticas. Esse
@@ -172,6 +172,25 @@ teste8 = DAtrrib (Var "x") (Var "y") (Num 2) (Num 4)
 -- cbigStep (teste9, exSigma2) Loop, Do While e DAtrrib
 teste9 :: C
 teste9 = Seq 
-    (Loop (Num 5) (Atrib (Var "x") (Soma (Var "x") (Num 1))))  
-    (Seq(DoWhile (Atrib (Var "y") (Soma (Var "y") (Num 2))) (Leq (Var "y") (Num 10)))  
-        (DAtrrib (Var "a") (Var "b") (Soma (Var "a") (Num 1)) (Sub (Var "b") (Num 1))))
+    (Loop (Num 5) (Atrib (Var "x") (Soma (Var "x") (Num 1))))   -- Loop 5 vezes: x:=x+1
+    (Seq 
+        (DoWhile (Atrib (Var "y") (Soma (Var "y") (Num 2))) (Leq (Var "y") (Num 10)))  -- Do While y:=y+2 while y<=10
+        (DAtrrib (Var "y") (Var "z") (Soma (Var "y") (Num 1)) (Sub (Var "z") (Num 1)))  -- y:=y+1 e z:=z-1
+    )
+-- cbigStep (fibonacci, exSigma2)
+fibonacci :: C
+fibonacci = Seq
+    (Atrib (Var "x") (Num 0)) -- x:=0
+    (Seq
+        (Atrib (Var "y") (Num 1)) -- y:=1
+        (While (Leq (Var "x") (Num 10)) -- while x<=10
+            (Seq
+                (Atrib (Var "z") (Var "x")) -- z:=x
+                (Seq
+                    (Atrib (Var "x") (Var "y")) -- x:=y
+                    (Atrib (Var "y") (Soma (Var "z") (Var "y")) -- y:=z+y
+                )
+            )
+        )
+    )
+    )
